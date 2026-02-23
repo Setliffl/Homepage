@@ -1,30 +1,223 @@
-<!DOCTYPE html>
-<html lang="en">
+<!doctype html>
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Homepage</title>
+<meta charset="UTF-8">
+<title>Tap to Deliver</title>
+
+<style>
+:root { --t: 0; }
+
+body{
+  margin:0;
+  font-family:Arial, sans-serif;
+  background:white;
+  overflow:hidden;
+}
+
+/* Top hint */
+#topBar{
+  position:fixed;
+  top:10px;
+  left:10px;
+  right:10px;
+  display:flex;
+  justify-content:space-between;
+  font-size:12px;
+}
+
+/* Tap area */
+#tapZone{
+  width:100vw;
+  height:100vh;
+  position:relative;
+  cursor:pointer;
+}
+
+/* Center path */
+#path{
+  position:absolute;
+  left:50%;
+  transform:translateX(-50%);
+  width:280px;
+  height:100%;
+  background:#f3f3f3;
+}
+
+/* Door far + high */
+#doorWrap{
+  position:absolute;
+  left:50%;
+  top:10%;
+  transform:
+    translateX(-50%)
+    translateY(calc(360px - (var(--t) * 310px)))
+    scale(calc(0.06 + (var(--t) * 1.45)));
+  transition:transform .12s linear;
+  width:180px;
+  height:280px;
+  pointer-events:none;
+}
+
+#door{
+  width:100%;
+  height:100%;
+  background:#c21c1c;
+  border:5px solid black;
+  position:relative;
+  transform-origin:left center;
+  transition:transform .2s linear;
+}
+
+#knob{
+  width:12px;
+  height:12px;
+  background:black;
+  position:absolute;
+  right:18px;
+  top:140px;
+}
+
+/* Door opening */
+.open #door{
+  transform:perspective(600px) rotateY(-65deg);
+}
+
+/* Delivery speech */
+#speech{
+  position:fixed;
+  left:50%;
+  top:55%;
+  transform:translateX(-50%);
+  padding:10px 14px;
+  border:4px solid black;
+  background:white;
+  font-size:14px;
+  display:none;
+}
+
+/* Step counter */
+#status{
+  position:fixed;
+  bottom:10px;
+  left:10px;
+  font-size:12px;
+}
+
+/* Fullscreen reveal */
+#reveal{
+  position:fixed;
+  inset:0;
+  display:none;
+  background:black;
+}
+
+#revealImg{
+  width:100vw;
+  height:100vh;
+  object-fit:cover;
+}
+
+/* Caption bubble on image */
+#captionBubble{
+  position:fixed;
+  bottom:30px;
+  left:50%;
+  transform:translateX(-50%);
+  background:rgba(0,0,0,0.75);
+  color:white;
+  border:4px solid white;
+  padding:18px 24px;
+  font-size:22px;
+  max-width:900px;
+  text-align:center;
+  display:none;
+}
+</style>
 </head>
+
 <body>
-    <h1>Welcome to My Homepage</h1>
-    <h2>Journal Entry</h2>
-    <p>After reading *My Website is a Shifting House*, I started thinking about how I usually see websites as finished things instead of ongoing spaces. I tend to feel like I need to have everything figured out before I share something online, but this reading made that pressure feel unnecessary. A website can change as I change, and it does not need to be perfect or permanent. The idea of a website as a kind of home made me think about how digital spaces can feel personal instead of performative. I often edit myself online to seem more put together or professional, especially when I think other people are watching. This reading made me realize that a personal website does not have to impress anyone. It can simply hold ideas, experiments, and thoughts as they develop over time.
-    Overall, this made me feel more comfortable with the idea of creating something unfinished. Letting a website exist as a work in progress feels more honest and less intimidating.
 
-    Journal Entry 2
-   
+<div id="topBar">
+  <div>click or press →</div>
+  <div>walk to the door</div>
+</div>
 
-<section class="journal-entry">
-  <h2>Journal Entry: Against an Increasingly User-Hostile Web</h2>
-  <p>
-    Reading <em>Against an Increasingly User-Hostile Web</em> by Parimal Satyal made me realize how normalized frustration on the internet has become. I honestly did not think much about cookie pop ups, autoplay videos, subscription traps, or endless ads before, but now I see how intentional a lot of it is. Satyal argues that the web used to feel more open and user focused, and now it feels manipulative and overwhelming. That really resonated with me because I catch myself clicking “accept all” or closing pop ups without even thinking, just to get to what I need.
-  </p>
-  <p>
-    What stood out most was the idea that design is not neutral. Websites are structured in ways that push us toward certain behaviors, usually ones that benefit companies instead of users. As a college student who spends so much time online for school, shopping, and social media, it feels exhausting to constantly navigate distractions and pressure tactics. The reading made me more aware of how much control platforms have over our attention and how different the internet could be if it prioritized people instead of profit.
-  </p>
-</section>
+<div id="tapZone">
+  <div id="path"></div>
 
+  <div id="doorWrap">
+    <div id="door">
+      <div id="knob"></div>
+    </div>
+  </div>
+</div>
 
-</p>
+<div id="speech">
+  Delivery guy: I got a pizza delivery for Tonka Jahari.
+</div>
+
+<div id="status">steps: 0</div>
+
+<div id="reveal">
+  <img id="revealImg" src="./saul.jpg">
+
+  <div id="captionBubble">
+    Tonka Jahari: I'm Tonka Jahari… but I WOULD NEVER order a whole pizza by myself.
+  </div>
+</div>
+
+<script>
+let steps = 0;
+const maxSteps = 55;
+
+const speech = document.getElementById("speech");
+const status = document.getElementById("status");
+const reveal = document.getElementById("reveal");
+const caption = document.getElementById("captionBubble");
+
+function update(){
+  const t = Math.min(steps / maxSteps, 1);
+  document.documentElement.style.setProperty("--t", t);
+  status.textContent = "steps: " + steps;
+
+  // Show delivery line BEFORE door opens
+  if(t > 0.85 && t < 0.98){
+    speech.style.display = "block";
+  } else {
+    speech.style.display = "none";
+  }
+
+  // At end: open door, then reveal image + caption
+  if(t === 1){
+    document.body.classList.add("open");
+    reveal.style.display = "block";
+    caption.style.display = "block";
+  } else {
+    document.body.classList.remove("open");
+    reveal.style.display = "none";
+    caption.style.display = "none";
+  }
+}
+
+function forward(){
+  if(steps < maxSteps){
+    steps++;
+    update();
+  }
+}
+
+document.getElementById("tapZone").addEventListener("click", forward);
+
+window.addEventListener("keydown", function(e){
+  if(e.code === "ArrowRight"){
+    forward();
+  }
+});
+
+update();
+</script>
+
 </body>
 </html>
+    
+
