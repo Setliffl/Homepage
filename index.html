@@ -1,223 +1,23 @@
-<!doctype html>
+<!DOCTYPE html>
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Tap to Deliver</title>
-
-<style>
-:root { --t: 0; }
-
-body{
-  margin:0;
-  font-family:Arial, sans-serif;
-  background:white;
-  overflow:hidden;
-}
-
-/* Top hint */
-#topBar{
-  position:fixed;
-  top:10px;
-  left:10px;
-  right:10px;
-  display:flex;
-  justify-content:space-between;
-  font-size:12px;
-}
-
-/* Tap area */
-#tapZone{
-  width:100vw;
-  height:100vh;
-  position:relative;
-  cursor:pointer;
-}
-
-/* Center path */
-#path{
-  position:absolute;
-  left:50%;
-  transform:translateX(-50%);
-  width:280px;
-  height:100%;
-  background:#f3f3f3;
-}
-
-/* Door far + high */
-#doorWrap{
-  position:absolute;
-  left:50%;
-  top:10%;
-  transform:
-    translateX(-50%)
-    translateY(calc(360px - (var(--t) * 310px)))
-    scale(calc(0.06 + (var(--t) * 1.45)));
-  transition:transform .12s linear;
-  width:180px;
-  height:280px;
-  pointer-events:none;
-}
-
-#door{
-  width:100%;
-  height:100%;
-  background:#c21c1c;
-  border:5px solid black;
-  position:relative;
-  transform-origin:left center;
-  transition:transform .2s linear;
-}
-
-#knob{
-  width:12px;
-  height:12px;
-  background:black;
-  position:absolute;
-  right:18px;
-  top:140px;
-}
-
-/* Door opening */
-.open #door{
-  transform:perspective(600px) rotateY(-65deg);
-}
-
-/* Delivery speech */
-#speech{
-  position:fixed;
-  left:50%;
-  top:55%;
-  transform:translateX(-50%);
-  padding:10px 14px;
-  border:4px solid black;
-  background:white;
-  font-size:14px;
-  display:none;
-}
-
-/* Step counter */
-#status{
-  position:fixed;
-  bottom:10px;
-  left:10px;
-  font-size:12px;
-}
-
-/* Fullscreen reveal */
-#reveal{
-  position:fixed;
-  inset:0;
-  display:none;
-  background:black;
-}
-
-#revealImg{
-  width:100vw;
-  height:100vh;
-  object-fit:cover;
-}
-
-/* Caption bubble on image */
-#captionBubble{
-  position:fixed;
-  bottom:30px;
-  left:50%;
-  transform:translateX(-50%);
-  background:rgba(0,0,0,0.75);
-  color:white;
-  border:4px solid white;
-  padding:18px 24px;
-  font-size:22px;
-  max-width:900px;
-  text-align:center;
-  display:none;
-}
-</style>
+<title>Lauren's Homepage</title>
 </head>
 
-<body>
+<body style="background-color: hotpink;">
 
-<div id="topBar">
-  <div>click or press →</div>
-  <div>walk to the door</div>
-</div>
+<h1>Lauren's Homepage!</h1>
 
-<div id="tapZone">
-  <div id="path"></div>
+<p>Welcome to my website!</p>
 
-  <div id="doorWrap">
-    <div id="door">
-      <div id="knob"></div>
-    </div>
-  </div>
-</div>
-
-<div id="speech">
-  Delivery guy: I got a pizza delivery for Tonka Jahari.
-</div>
-
-<div id="status">steps: 0</div>
-
-<div id="reveal">
-  <img id="revealImg" src="./saul.jpg">
-
-  <div id="captionBubble">
-    Tonka Jahari: I'm Tonka Jahari… but I WOULD NEVER order a whole pizza by myself.
-  </div>
-</div>
-
-<script>
-let steps = 0;
-const maxSteps = 55;
-
-const speech = document.getElementById("speech");
-const status = document.getElementById("status");
-const reveal = document.getElementById("reveal");
-const caption = document.getElementById("captionBubble");
-
-function update(){
-  const t = Math.min(steps / maxSteps, 1);
-  document.documentElement.style.setProperty("--t", t);
-  status.textContent = "steps: " + steps;
-
-  // Show delivery line BEFORE door opens
-  if(t > 0.85 && t < 0.98){
-    speech.style.display = "block";
-  } else {
-    speech.style.display = "none";
-  }
-
-  // At end: open door, then reveal image + caption
-  if(t === 1){
-    document.body.classList.add("open");
-    reveal.style.display = "block";
-    caption.style.display = "block";
-  } else {
-    document.body.classList.remove("open");
-    reveal.style.display = "none";
-    caption.style.display = "none";
-  }
-}
-
-function forward(){
-  if(steps < maxSteps){
-    steps++;
-    update();
-  }
-}
-
-document.getElementById("tapZone").addEventListener("click", forward);
-
-window.addEventListener("keydown", function(e){
-  if(e.code === "ArrowRight"){
-    forward();
-  }
-});
-
-update();
-</script>
+<ul>
+<li><a href="first-website/index.html">First Website</a></li>
+<li><a href="astrology/index.html">Passion Website</a></li>
+<li><a href="structure/index.html">Structure Website</a></li>
+<li><a href="screensaver/index.html">Screensaver Website</a></li>
+<li><a href="journal3.html">Reading Response</a></li>
+</ul>
 
 </body>
 </html>
-    
-
