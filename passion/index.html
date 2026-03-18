@@ -1,0 +1,760 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Star Atlas • Zodiac</title>
+  <style>
+    :root{
+      --navy-0:#050816;
+      --navy-1:#070b1e;
+      --navy-2:#0b1230;
+      --ink:#eaf0ff;
+      --muted:#a9b7ff;
+      --line: rgba(255,255,255,.12);
+      --shadow: 0 18px 60px rgba(0,0,0,.45);
+      --radius: 18px;
+    }
+    *{ box-sizing: border-box; }
+    html, body{ height: 100%; }
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+      color: var(--ink);
+      background: radial-gradient(1200px 800px at 70% -10%, rgba(64,111,255,.25), transparent 60%),
+                  radial-gradient(900px 600px at 10% 0%, rgba(168,83,255,.18), transparent 60%),
+                  radial-gradient(900px 700px at 50% 120%, rgba(54,192,255,.10), transparent 55%),
+                  linear-gradient(180deg, var(--navy-0), var(--navy-1) 40%, var(--navy-2) 100%);
+      overflow-x:hidden;
+    }
+
+    /* starfield */
+    .stars, .stars::before, .stars::after{
+      position: fixed; inset: 0; content: "";
+      pointer-events:none; z-index: -1;
+      background-repeat: repeat; background-position: 0 0;
+      opacity: .9;
+    }
+    .stars{
+      background-image:
+        radial-gradient(1px 1px at 10% 20%, rgba(255,255,255,.9) 50%, transparent 52%),
+        radial-gradient(1px 1px at 30% 80%, rgba(255,255,255,.8) 50%, transparent 52%),
+        radial-gradient(1px 1px at 70% 30%, rgba(255,255,255,.7) 50%, transparent 52%),
+        radial-gradient(1px 1px at 90% 70%, rgba(255,255,255,.85) 50%, transparent 52%);
+      background-size: 220px 220px, 260px 260px, 300px 300px, 340px 340px;
+      filter: drop-shadow(0 0 4px rgba(255,255,255,.35));
+      animation: drift 120s linear infinite;
+    }
+    .stars::before{
+      background-image:
+        radial-gradient(1px 1px at 15% 60%, rgba(255,255,255,.55) 50%, transparent 52%),
+        radial-gradient(1px 1px at 55% 15%, rgba(255,255,255,.6) 50%, transparent 52%),
+        radial-gradient(1px 1px at 85% 45%, rgba(255,255,255,.5) 50%, transparent 52%);
+      background-size: 260px 260px, 310px 310px, 360px 360px;
+      opacity: .65;
+      animation: drift 180s linear infinite reverse;
+    }
+    .stars::after{
+      background-image:
+        radial-gradient(1px 1px at 25% 35%, rgba(255,255,255,.35) 50%, transparent 52%),
+        radial-gradient(1px 1px at 60% 75%, rgba(255,255,255,.4) 50%, transparent 52%),
+        radial-gradient(1px 1px at 78% 18%, rgba(255,255,255,.32) 50%, transparent 52%);
+      background-size: 320px 320px, 380px 380px, 460px 460px;
+      opacity: .45;
+      animation: drift 240s linear infinite;
+    }
+    @keyframes drift{ from{ background-position: 0 0; } to{ background-position: 1200px 800px; } }
+
+    .wrap{
+      width: min(1100px, 92vw);
+      margin: 0 auto;
+      padding: 26px 0 60px;
+    }
+
+    header{
+      display:flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 10px 0 18px;
+    }
+    .brand h1{ margin:0; font-size: clamp(22px, 2.8vw, 30px); letter-spacing: .6px; }
+    .brand p{ margin:6px 0 0; color: var(--muted); font-size: 14px; }
+
+    .mode{
+      display:flex; gap:8px; align-items:center;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.06);
+      border-radius: 999px;
+      padding: 6px;
+      box-shadow: 0 10px 35px rgba(0,0,0,.25);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
+    .mode button{
+      border: 0;
+      background: transparent;
+      color: rgba(234,240,255,.85);
+      padding: 8px 10px;
+      border-radius: 999px;
+      cursor:pointer;
+      font-weight: 700;
+      letter-spacing: .2px;
+      font-size: 13px;
+      display:flex; gap:8px; align-items:center;
+    }
+    .mode button.active{
+      background: rgba(255,255,255,.14);
+      color: var(--ink);
+      box-shadow: 0 10px 22px rgba(0,0,0,.22);
+    }
+    .icon{ width: 16px; height:16px; display:inline-block; }
+
+    .hero{
+      border-radius: var(--radius);
+      border: 1px solid var(--line);
+      background: linear-gradient(135deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
+      overflow: hidden;
+      box-shadow: var(--shadow);
+    }
+    .hero-inner{
+      display:grid;
+      grid-template-columns: 1.05fr .95fr;
+      gap: 18px;
+      padding: 18px;
+      align-items: stretch;
+    }
+    .hero-copy{ padding: 10px; }
+    .hero-copy h2{ margin:0 0 8px; font-size: clamp(20px, 2.6vw, 28px); letter-spacing: .4px; }
+    .hero-copy .sub{ margin:0 0 14px; color: var(--muted); font-size: 14px; line-height: 1.5; max-width: 60ch; }
+    .cta-row{ display:flex; gap: 10px; flex-wrap: wrap; align-items:center; }
+    .btn{
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.08);
+      color: var(--ink);
+      padding: 10px 12px;
+      border-radius: 12px;
+      cursor:pointer;
+      transition: transform .12s ease, background .12s ease, border-color .12s ease;
+      font-weight: 700;
+      letter-spacing: .2px;
+    }
+    .btn:hover{ transform: translateY(-1px); background: rgba(255,255,255,.12); border-color: rgba(255,255,255,.22); }
+    .ghost{ background: rgba(12, 18, 54, .35); }
+
+    .hero-img{
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,.14);
+      background: rgba(255,255,255,.05);
+      overflow:hidden;
+      position: relative;
+      min-height: 240px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding: 10px;
+    }
+    .hero-img img{
+      width:100%;
+      height:100%;
+      object-fit: cover;
+      display:block;
+      border-radius: 12px;
+    }
+    .img-overlay{
+      position:absolute;
+      inset:0;
+      background:
+        radial-gradient(800px 400px at 50% 0%, rgba(90,120,255,.22), transparent 60%),
+        linear-gradient(180deg, rgba(0,0,0,.05), rgba(0,0,0,.35));
+      pointer-events:none;
+    }
+
+    .section-title{
+      display:flex;
+      align-items:flex-end;
+      justify-content: space-between;
+      gap: 12px;
+      margin: 22px 2px 10px;
+    }
+    .section-title h3{
+      margin:0;
+      font-size: 16px;
+      letter-spacing: .5px;
+      text-transform: uppercase;
+      color: rgba(234,240,255,.9);
+    }
+    .hint{ margin:0; font-size: 13px; color: var(--muted); }
+
+    .grid{
+      display:grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 10px;
+    }
+    @media (max-width: 980px){
+      .hero-inner{ grid-template-columns: 1fr; }
+      .grid{ grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    }
+    @media (max-width: 680px){
+      header{ flex-direction: column; align-items:flex-start; }
+      .grid{ grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+
+    .card{
+      border-radius: 16px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.06);
+      box-shadow: 0 12px 35px rgba(0,0,0,.22);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      overflow:hidden;
+      cursor:pointer;
+      transition: transform .14s ease, border-color .14s ease, background .14s ease;
+      position: relative;
+      min-height: 160px;
+      padding:0;
+      text-align:left;
+    }
+    .card:hover{ transform: translateY(-2px); border-color: rgba(255,255,255,.22); background: rgba(255,255,255,.085); }
+
+    .card-top{
+      display:flex;
+      align-items:center;
+      justify-content: space-between;
+      padding: 12px 12px 0 12px;
+      gap: 10px;
+    }
+    .badge{
+      font-size: 11px;
+      color: rgba(234,240,255,.85);
+      border: 1px solid rgba(255,255,255,.16);
+      background: rgba(0,0,0,.16);
+      padding: 6px 8px;
+      border-radius: 999px;
+      letter-spacing: .4px;
+    }
+    .glyph{ font-size: 22px; line-height: 1; opacity: .95; filter: drop-shadow(0 0 12px rgba(130,160,255,.28)); }
+    .card-mid{ padding: 8px 12px 12px; display:flex; flex-direction: column; gap: 6px; }
+    .name{ margin:0; font-weight: 900; letter-spacing: .3px; font-size: 18px; }
+    .dates{ margin:0; font-size: 13px; color: var(--muted); line-height: 1.35; }
+
+    .thumb{
+      width: 100%;
+      height: 84px;
+      background: rgba(255,255,255,.03);
+      border-top: 1px solid rgba(255,255,255,.10);
+      position: relative;
+      overflow:hidden;
+    }
+    .thumb img{ width:100%; height:100%; object-fit: cover; display:block; opacity: .98; }
+    .thumb::after{
+      content:"";
+      position:absolute; inset:0;
+      background: linear-gradient(180deg, transparent, rgba(0,0,0,.32));
+      pointer-events:none;
+    }
+
+    /* side drawer */
+    .drawer-backdrop{
+      position: fixed;
+      inset:0;
+      background: rgba(0,0,0,.55);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .18s ease;
+      z-index: 50;
+    }
+    .drawer{
+      position: fixed;
+      top:0; right:0;
+      height: 100%;
+      width: min(420px, 92vw);
+      background: linear-gradient(180deg, rgba(8,12,35,.92), rgba(10,16,48,.92));
+      border-left: 1px solid rgba(255,255,255,.14);
+      box-shadow: -20px 0 70px rgba(0,0,0,.55);
+      transform: translateX(110%);
+      transition: transform .22s ease;
+      z-index: 60;
+      display:flex;
+      flex-direction: column;
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+    }
+    .drawer.open{ transform: translateX(0); }
+    .drawer-backdrop.open{ opacity: 1; pointer-events: auto; }
+
+    .drawer-header{
+      padding: 16px 16px 12px;
+      display:flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: flex-start;
+      border-bottom: 1px solid rgba(255,255,255,.10);
+    }
+    .drawer-title h4{ margin:0; font-size: 20px; letter-spacing: .2px; }
+    .drawer-title p{ margin:6px 0 0; color: var(--muted); font-size: 13px; }
+    .close{
+      border: 1px solid rgba(255,255,255,.16);
+      background: rgba(255,255,255,.08);
+      color: var(--ink);
+      border-radius: 12px;
+      padding: 8px 10px;
+      cursor:pointer;
+      font-weight: 900;
+    }
+
+    .drawer-body{
+      padding: 14px 16px 18px;
+      overflow:auto;
+      display:flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .panel{
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.06);
+      border-radius: 16px;
+      overflow:hidden;
+    }
+    .panel img{
+      width:100%;
+      height: 190px;
+      object-fit: cover;
+      display:block;
+    }
+    .panel .content{ padding: 12px 12px 14px; display:flex; flex-direction: column; gap: 10px; }
+
+    .chips{ display:flex; flex-wrap: wrap; gap: 8px; }
+    .chip{
+      padding: 8px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.14);
+      background: rgba(0,0,0,.16);
+      color: rgba(234,240,255,.92);
+      font-size: 12px;
+      letter-spacing: .2px;
+      font-weight: 700;
+    }
+
+    .list{ margin:0; padding-left: 18px; color: rgba(234,240,255,.92); line-height: 1.55; font-size: 14px; }
+    .small{ font-size: 12px; color: var(--muted); line-height: 1.45; margin: 0; }
+
+    footer{
+      margin-top: 18px;
+      padding-top: 14px;
+      border-top: 1px solid rgba(255,255,255,.10);
+      color: rgba(169,183,255,.85);
+      font-size: 12px;
+      display:flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="stars"></div>
+
+  <div class="wrap">
+    <header>
+      <div class="brand">
+        <h1>Star Atlas</h1>
+        <p>Zodiac Signs</p>
+      </div>
+
+      <!-- Sun / Moon / Rising toggle -->
+      <div class="mode" role="tablist" aria-label="Mode">
+        <button id="modeSun" class="active" type="button" aria-selected="true">
+          <span class="icon">☀️</span> Sun
+        </button>
+        <button id="modeMoon" type="button" aria-selected="false">
+          <span class="icon">🌙</span> Moon
+        </button>
+        <button id="modeRising" type="button" aria-selected="false">
+          <span class="icon">⬆️</span> Rising
+        </button>
+      </div>
+    </header>
+
+    <section class="hero">
+      <div class="hero-inner">
+        <div class="hero-copy">
+          <h2 id="heroTitle">Sun Signs</h2>
+          <p class="sub" id="heroSub">
+            Tap a sign to view Sun traits.
+          </p>
+          <div class="cta-row">
+            <button class="btn" id="openRandom" type="button">Open random</button>
+            <button class="btn ghost" id="closePanel" type="button">Close panel</button>
+          </div>
+        </div>
+
+        <!-- Zodiac wheel image (generated locally as SVG so it always shows) -->
+        <div class="hero-img">
+          <img id="wheelImg" alt="Zodiac wheel" />
+          <div class="img-overlay"></div>
+        </div>
+      </div>
+    </section>
+
+    <div class="section-title">
+      <h3>Choose your sign</h3>
+      <p class="hint">Esc closes the panel</p>
+    </div>
+
+    <section class="grid" id="grid" aria-label="Zodiac grid"></section>
+
+    <footer>
+      <span>Star Atlas</span>
+      <span>☀️ Sun • 🌙 Moon • ⬆️ Rising</span>
+    </footer>
+  </div>
+
+  <!-- Drawer -->
+  <div class="drawer-backdrop" id="backdrop" aria-hidden="true"></div>
+  <aside class="drawer" id="drawer" aria-label="Zodiac details panel" aria-hidden="true">
+    <div class="drawer-header">
+      <div class="drawer-title">
+        <h4 id="dName">Sign</h4>
+        <p id="dDates">Dates</p>
+      </div>
+      <button class="close" id="closeBtn" type="button" aria-label="Close panel">✕</button>
+    </div>
+
+    <div class="drawer-body">
+      <div class="panel">
+        <img id="dImg" alt="" />
+        <div class="content">
+          <div class="chips" id="dChips"></div>
+          <ul class="list" id="dTraits"></ul>
+          <p class="small" id="dNote"></p>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <script>
+    // --- SVG helpers (no external images so nothing breaks) ---
+    function svgToDataUri(svg) {
+      const encoded = encodeURIComponent(svg)
+        .replace(/'/g, "%27")
+        .replace(/"/g, "%22");
+      return "data:image/svg+xml;charset=utf-8," + encoded;
+    }
+
+    function makeWheelSvg() {
+      // simple, pretty wheel with 12 segments + glyphs
+      const glyphs = ["♈","♉","♊","♋","♌","♍","♎","♏","♐","♑","♒","♓"];
+      const labels = ["Aries","Taurus","Gemini","Cancer","Leo","Virgo","Libra","Scorpio","Sagittarius","Capricorn","Aquarius","Pisces"];
+      const cx = 500, cy = 500, rOuter = 420, rInner = 250;
+
+      const segs = [];
+      for (let i=0;i<12;i++){
+        const a0 = (i * 30 - 90) * Math.PI/180;
+        const a1 = ((i+1) * 30 - 90) * Math.PI/180;
+
+        const x0 = cx + rOuter * Math.cos(a0);
+        const y0 = cy + rOuter * Math.sin(a0);
+        const x1 = cx + rOuter * Math.cos(a1);
+        const y1 = cy + rOuter * Math.sin(a1);
+
+        const xi0 = cx + rInner * Math.cos(a0);
+        const yi0 = cy + rInner * Math.sin(a0);
+        const xi1 = cx + rInner * Math.cos(a1);
+        const yi1 = cy + rInner * Math.sin(a1);
+
+        const large = 0;
+
+        const d = `
+          M ${x0} ${y0}
+          A ${rOuter} ${rOuter} 0 ${large} 1 ${x1} ${y1}
+          L ${xi1} ${yi1}
+          A ${rInner} ${rInner} 0 ${large} 0 ${xi0} ${yi0}
+          Z
+        `;
+
+        const mid = (a0 + a1) / 2;
+        const tx = cx + 330 * Math.cos(mid);
+        const ty = cy + 330 * Math.sin(mid);
+
+        segs.push(`
+          <path d="${d}" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.12)" stroke-width="2"/>
+          <text x="${tx}" y="${ty}" text-anchor="middle" dominant-baseline="middle"
+            font-size="44" fill="rgba(234,240,255,0.92)" style="font-weight:800">${glyphs[i]}</text>
+          <text x="${tx}" y="${ty+46}" text-anchor="middle" dominant-baseline="middle"
+            font-size="18" fill="rgba(169,183,255,0.95)">${labels[i]}</text>
+        `);
+      }
+
+      const svg = `
+        <svg xmlns="http://www.w3.org/2000/svg" width="1000" height="1000" viewBox="0 0 1000 1000">
+          <defs>
+            <radialGradient id="g" cx="50%" cy="40%" r="70%">
+              <stop offset="0%" stop-color="rgba(110,150,255,0.35)"/>
+              <stop offset="60%" stop-color="rgba(20,30,70,0.08)"/>
+              <stop offset="100%" stop-color="rgba(0,0,0,0)"/>
+            </radialGradient>
+            <filter id="glow">
+              <feGaussianBlur stdDeviation="6" result="b"/>
+              <feMerge>
+                <feMergeNode in="b"/>
+                <feMergeNode in="SourceGraphic"/>
+              </feMerge>
+            </filter>
+          </defs>
+          <rect width="1000" height="1000" fill="rgba(0,0,0,0)"/>
+          <circle cx="500" cy="500" r="470" fill="url(#g)"/>
+          <circle cx="500" cy="500" r="435" fill="rgba(255,255,255,0.02)" stroke="rgba(255,255,255,0.12)" stroke-width="2"/>
+          ${segs.join("")}
+          <circle cx="500" cy="500" r="250" fill="rgba(8,12,35,0.55)" stroke="rgba(255,255,255,0.14)" stroke-width="2"/>
+          <circle cx="500" cy="500" r="120" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.12)" stroke-width="2"/>
+          <text x="500" y="500" text-anchor="middle" dominant-baseline="middle"
+            font-size="34" fill="rgba(234,240,255,0.95)" style="font-weight:900" filter="url(#glow)">
+            ZODIAC
+          </text>
+        </svg>
+      `;
+      return svgToDataUri(svg);
+    }
+
+    function makeSignSvg(signName, glyph) {
+      const svg = `
+        <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="420" viewBox="0 0 1200 420">
+          <defs>
+            <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="rgba(20,28,72,0.90)"/>
+              <stop offset="55%" stop-color="rgba(10,14,40,0.88)"/>
+              <stop offset="100%" stop-color="rgba(8,10,30,0.92)"/>
+            </linearGradient>
+            <radialGradient id="spot" cx="30%" cy="35%" r="60%">
+              <stop offset="0%" stop-color="rgba(110,150,255,0.30)"/>
+              <stop offset="70%" stop-color="rgba(0,0,0,0)"/>
+            </radialGradient>
+            <filter id="soft">
+              <feGaussianBlur stdDeviation="6" result="b"/>
+              <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+            </filter>
+          </defs>
+
+          <rect width="1200" height="420" rx="28" fill="url(#bg)"/>
+          <rect width="1200" height="420" rx="28" fill="url(#spot)"/>
+
+          <!-- tiny stars -->
+          ${Array.from({length: 60}).map((_,i)=>{
+            const x = (i*197)%1200;
+            const y = (i*83)%420;
+            const o = (i%7)/10 + 0.2;
+            return `<circle cx="${x}" cy="${y}" r="${(i%3)+1}" fill="rgba(255,255,255,${o})"/>`;
+          }).join("")}
+
+          <circle cx="210" cy="210" r="140" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.14)" stroke-width="2"/>
+          <text x="210" y="220" text-anchor="middle" dominant-baseline="middle"
+            font-size="92" fill="rgba(234,240,255,0.96)" style="font-weight:900" filter="url(#soft)">${glyph}</text>
+
+          <text x="420" y="190" font-size="44" fill="rgba(234,240,255,0.96)" style="font-weight:900">${signName}</text>
+          <text x="420" y="240" font-size="18" fill="rgba(169,183,255,0.95)">Zodiac symbol</text>
+        </svg>
+      `;
+      return svgToDataUri(svg);
+    }
+
+    // --- Data ---
+    const SIGNS = [
+      { key:"aries", name:"Aries", glyph:"♈", dates:"Mar 21 – Apr 19", element:"Fire", mode:"Cardinal",
+        sun:{ traits:["Bold + direct","Fast action energy","Competitive + brave","Hates boring routines"], note:"Sun Aries shines when they’re leading and moving." },
+        moon:{ traits:["Feels things quickly","Protective when hurt","Needs independence emotionally","Cools off fast after conflict"], note:"Moon Aries needs space to reset and recharge." },
+        rising:{ traits:["Comes off confident","Moves with urgency","First impression: fearless","Blunt but honest vibe"], note:"Aries Rising reads as bold and unstoppable." }
+      },
+      { key:"taurus", name:"Taurus", glyph:"♉", dates:"Apr 20 – May 20", element:"Earth", mode:"Fixed",
+        sun:{ traits:["Grounded + loyal","Comfort and beauty lover","Steady, patient energy","Stubborn when pushed"], note:"Sun Taurus thrives with stability and consistency." },
+        moon:{ traits:["Needs security","Soothes with food/music/cozy","Deep attachment to people","Slow to trust, hard to shake"], note:"Moon Taurus needs calm routines." },
+        rising:{ traits:["Looks composed","Quiet confidence","Moves slowly on purpose","First impression: dependable"], note:"Taurus Rising feels steady and calm." }
+      },
+      { key:"gemini", name:"Gemini", glyph:"♊", dates:"May 21 – Jun 20", element:"Air", mode:"Mutable",
+        sun:{ traits:["Curious + social","Quick mind","Multi-interest vibe","Can switch moods fast"], note:"Sun Gemini shines when learning and connecting." },
+        moon:{ traits:["Processes feelings by talking","Needs mental stimulation","Overthinks easily","Feels better after movement/change"], note:"Moon Gemini needs conversation and variety." },
+        rising:{ traits:["Looks friendly + witty","Talks easily","First impression: playful","Gives ‘busy brain’ energy"], note:"Gemini Rising reads as bright and social." }
+      },
+      { key:"cancer", name:"Cancer", glyph:"♋", dates:"Jun 21 – Jul 22", element:"Water", mode:"Cardinal",
+        sun:{ traits:["Nurturing + protective","Homebody heart","Strong intuition","Sensitive to vibes"], note:"Sun Cancer shines when caring for their people." },
+        moon:{ traits:["Feels deeply","Needs emotional safety","Mood tides are real","Remembers everything"], note:"Moon Cancer needs gentleness and reassurance." },
+        rising:{ traits:["Seems soft + reserved","Observant","First impression: sweet","Protective aura"], note:"Cancer Rising reads as calm but guarded." }
+      },
+      { key:"leo", name:"Leo", glyph:"♌", dates:"Jul 23 – Aug 22", element:"Fire", mode:"Fixed",
+        sun:{ traits:["Warm + confident","Creative energy","Loyal and proud","Needs respect"], note:"Sun Leo shines when celebrated and expressing." },
+        moon:{ traits:["Needs affection","Big feelings under the glam","Pride gets hurt easily","Loves heartfelt attention"], note:"Moon Leo needs love that feels obvious." },
+        rising:{ traits:["Stands out instantly","Radiant presence","First impression: bold","Main-character aura"], note:"Leo Rising reads as magnetic." }
+      },
+      { key:"virgo", name:"Virgo", glyph:"♍", dates:"Aug 23 – Sep 22", element:"Earth", mode:"Mutable",
+        sun:{ traits:["Detail-focused","Helpful + practical","Quiet high standards","Problem-solver"], note:"Sun Virgo shines when improving systems." },
+        moon:{ traits:["Worries privately","Shows love by helping","Needs order to feel safe","Self-critical at times"], note:"Moon Virgo needs calm structure." },
+        rising:{ traits:["Put-together look","Reserved at first","First impression: smart","Clean + minimal vibe"], note:"Virgo Rising reads as capable." }
+      },
+      { key:"libra", name:"Libra", glyph:"♎", dates:"Sep 23 – Oct 22", element:"Air", mode:"Cardinal",
+        sun:{ traits:["Charming + fair","Relationship-oriented","Aesthetic taste","Can’t decide fast"], note:"Sun Libra shines in harmony and partnership." },
+        moon:{ traits:["Needs peace emotionally","Avoids harsh conflict","Feels better with beauty/music","Over-accommodates sometimes"], note:"Moon Libra needs balance and softness." },
+        rising:{ traits:["Polished appearance","Friendly + smooth","First impression: cute","Social ease"], note:"Libra Rising reads as graceful." }
+      },
+      { key:"scorpio", name:"Scorpio", glyph:"♏", dates:"Oct 23 – Nov 21", element:"Water", mode:"Fixed",
+        sun:{ traits:["Intense + loyal","Private but deep","All-or-nothing","Strong boundaries"], note:"Sun Scorpio shines through transformation." },
+        moon:{ traits:["Feels everything","Trust is huge","Jealousy when unsafe","Needs emotional honesty"], note:"Moon Scorpio needs loyalty and truth." },
+        rising:{ traits:["Mysterious vibe","Strong eye contact","First impression: intense","Reads people fast"], note:"Scorpio Rising feels powerful." }
+      },
+      { key:"sagittarius", name:"Sagittarius", glyph:"♐", dates:"Nov 22 – Dec 21", element:"Fire", mode:"Mutable",
+        sun:{ traits:["Free-spirited","Funny + blunt","Big-picture thinker","Hates being boxed in"], note:"Sun Sag shines with adventure and growth." },
+        moon:{ traits:["Needs freedom emotionally","Cheers up fast","Avoids heavy clinginess","Feels best traveling/learning"], note:"Moon Sag needs space + optimism." },
+        rising:{ traits:["Approachable energy","Playful presence","First impression: fun","Looks like they’re going somewhere"], note:"Sag Rising reads as upbeat." }
+      },
+      { key:"capricorn", name:"Capricorn", glyph:"♑", dates:"Dec 22 – Jan 19", element:"Earth", mode:"Cardinal",
+        sun:{ traits:["Driven + disciplined","Goal-focused","Protects by providing","Slow to open up"], note:"Sun Cap shines through achievement." },
+        moon:{ traits:["Feels responsible for everything","Shows love through effort","Keeps emotions private","Needs respect"], note:"Moon Cap needs stability and trust." },
+        rising:{ traits:["Serious first impression","Calm and capable","Looks mature","Low-key intimidating"], note:"Cap Rising reads as strong." }
+      },
+      { key:"aquarius", name:"Aquarius", glyph:"♒", dates:"Jan 20 – Feb 18", element:"Air", mode:"Fixed",
+        sun:{ traits:["Independent","Original thinker","Humanitarian vibe","Doesn’t follow trends"], note:"Sun Aqua shines by being different." },
+        moon:{ traits:["Detached when overwhelmed","Needs friendship in love","Feels things mentally first","Needs alone time"], note:"Moon Aqua needs space and understanding." },
+        rising:{ traits:["Unique style","Cool + observant","First impression: different","Quiet rebel energy"], note:"Aqua Rising reads as interesting." }
+      },
+      { key:"pisces", name:"Pisces", glyph:"♓", dates:"Feb 19 – Mar 20", element:"Water", mode:"Mutable",
+        sun:{ traits:["Dreamy + kind","Artistic","Intuitive","Absorbs other people’s energy"], note:"Sun Pisces shines through creativity and compassion." },
+        moon:{ traits:["Hyper empath","Needs escape sometimes","Romantic + sensitive","Boundaries are important"], note:"Moon Pisces needs rest and softness." },
+        rising:{ traits:["Gentle presence","Soft eyes vibe","First impression: sweet","Seems dreamy"], note:"Pisces Rising reads as tender." }
+      },
+    ];
+
+    // --- DOM ---
+    const grid = document.getElementById("grid");
+    const drawer = document.getElementById("drawer");
+    const backdrop = document.getElementById("backdrop");
+
+    const dName = document.getElementById("dName");
+    const dDates = document.getElementById("dDates");
+    const dImg = document.getElementById("dImg");
+    const dChips = document.getElementById("dChips");
+    const dTraits = document.getElementById("dTraits");
+    const dNote = document.getElementById("dNote");
+
+    const heroTitle = document.getElementById("heroTitle");
+    const heroSub = document.getElementById("heroSub");
+
+    // --- State ---
+    let currentMode = "sun"; // sun | moon | rising
+
+    function setMode(mode){
+      currentMode = mode;
+
+      document.getElementById("modeSun").classList.toggle("active", mode==="sun");
+      document.getElementById("modeMoon").classList.toggle("active", mode==="moon");
+      document.getElementById("modeRising").classList.toggle("active", mode==="rising");
+
+      document.getElementById("modeSun").setAttribute("aria-selected", mode==="sun");
+      document.getElementById("modeMoon").setAttribute("aria-selected", mode==="moon");
+      document.getElementById("modeRising").setAttribute("aria-selected", mode==="rising");
+
+      if(mode==="sun"){ heroTitle.textContent="Sun Signs"; heroSub.textContent="Tap a sign to view Sun traits."; }
+      if(mode==="moon"){ heroTitle.textContent="Moon Signs"; heroSub.textContent="Tap a sign to view Moon traits."; }
+      if(mode==="rising"){ heroTitle.textContent="Rising Signs"; heroSub.textContent="Tap a sign to view Rising traits."; }
+    }
+
+    function openDrawer(sign){
+      const pack = sign[currentMode];
+
+      dName.textContent = `${sign.name} ${sign.glyph}`;
+      dDates.textContent = sign.dates;
+
+      // image always works (generated)
+      dImg.src = makeSignSvg(sign.name, sign.glyph);
+      dImg.alt = `${sign.name} artwork`;
+
+      // chips
+      dChips.innerHTML = "";
+      const modeLabel = currentMode === "sun" ? "Sun" : currentMode === "moon" ? "Moon" : "Rising";
+      const chips = [
+        `${modeLabel}`,
+        `Element: ${sign.element}`,
+        `Mode: ${sign.mode}`
+      ];
+      chips.forEach(t=>{
+        const el = document.createElement("span");
+        el.className = "chip";
+        el.textContent = t;
+        dChips.appendChild(el);
+      });
+
+      // traits
+      dTraits.innerHTML = "";
+      pack.traits.forEach(tr=>{
+        const li = document.createElement("li");
+        li.textContent = tr;
+        dTraits.appendChild(li);
+      });
+
+      dNote.textContent = pack.note;
+
+      drawer.classList.add("open");
+      backdrop.classList.add("open");
+      drawer.setAttribute("aria-hidden","false");
+      backdrop.setAttribute("aria-hidden","false");
+    }
+
+    function closeDrawer(){
+      drawer.classList.remove("open");
+      backdrop.classList.remove("open");
+      drawer.setAttribute("aria-hidden","true");
+      backdrop.setAttribute("aria-hidden","true");
+    }
+
+    // Render cards (thumbnails are also generated)
+    function renderGrid(){
+      grid.innerHTML = "";
+      SIGNS.forEach(sign=>{
+        const card = document.createElement("button");
+        card.className = "card";
+        card.type = "button";
+        card.setAttribute("aria-label", `Open ${sign.name}`);
+        card.innerHTML = `
+          <div class="card-top">
+            <span class="badge">${sign.element} • ${sign.mode}</span>
+            <span class="glyph">${sign.glyph}</span>
+          </div>
+          <div class="card-mid">
+            <p class="name">${sign.name}</p>
+            <p class="dates">${sign.dates}</p>
+          </div>
+          <div class="thumb">
+            <img src="${makeSignSvg(sign.name, sign.glyph)}" alt="${sign.name} thumbnail">
+          </div>
+        `;
+        card.addEventListener("click", ()=> openDrawer(sign));
+        grid.appendChild(card);
+      });
+    }
+
+    // Buttons + close behavior (this fixes your close issue)
+    document.getElementById("closeBtn").addEventListener("click", closeDrawer);
+    document.getElementById("closePanel").addEventListener("click", closeDrawer);
+    backdrop.addEventListener("click", closeDrawer);
+    document.addEventListener("keydown", (e)=>{ if(e.key === "Escape") closeDrawer(); });
+
+    // random
+    document.getElementById("openRandom").addEventListener("click", ()=>{
+      const pick = SIGNS[Math.floor(Math.random() * SIGNS.length)];
+      openDrawer(pick);
+    });
+
+    // mode toggle
+    document.getElementById("modeSun").addEventListener("click", ()=> setMode("sun"));
+    document.getElementById("modeMoon").addEventListener("click", ()=> setMode("moon"));
+    document.getElementById("modeRising").addEventListener("click", ()=> setMode("rising"));
+
+    // Init hero wheel image + grid
+    document.getElementById("wheelImg").src = makeWheelSvg();
+    setMode("sun");
+    renderGrid();
+  </script>
+</body>
+</html>
+
